@@ -10,9 +10,9 @@ from app.queries import (
     remove_question,
     update_question,
     get_all_users_and_scores , 
-    # calculate_score , 
-    # save_quiz_responses , 
-    # save_quiz_start
+    calculate_score , 
+    save_quiz_responses , 
+    save_quiz_start
 )
 from app.schemas import (
     RandomQuestionResponse,
@@ -90,25 +90,25 @@ async def users_and_scores():
     return UserScoreListResponse(users_scores=users_scores)
 
 
-# @app.post("/start-quiz/{topic_id}")
-# async def start_quiz(topic_id: int, user_id: int):
-#     # Generate a unique quiz_id
-#     quiz_id = str(uuid4())  # Unique ID for the quiz (UUID string)
+@app.post("/start-quiz/{topic_id}")
+async def start_quiz(topic_id: int, user_id: int):
+    # Generate a unique quiz_id
+    quiz_id = str(uuid4())  # Unique ID for the quiz (UUID string)
 
-#     # Fetch random questions based on the topic
-#     questions = get_random_questions_by_topic(topic_id)
+    # Fetch random questions based on the topic
+    questions = get_random_questions_by_topic(topic_id)
 
-#     save_quiz_start(quiz_id, user_id, topic_id )
-#     return {"quiz_id": quiz_id, "questions": questions}
+    save_quiz_start(quiz_id, user_id, topic_id )
+    return {"quiz_id": quiz_id, "questions": questions}
 
 
 
-# @app.post("/submit-quiz/{quiz_id}")
-# async def submit_quiz(quiz_id: str, user_responses: List[QuizResponse]):
-#     # Calculate score based on correct answers
-#     score = calculate_score(user_responses)
+@app.post("/submit-quiz/{quiz_id}")
+async def submit_quiz(quiz_id: str, user_responses: List[QuizResponse]):
+    # Calculate score based on correct answers
+    score = calculate_score(user_responses)
 
-#     # Save responses and update score
-#     save_quiz_responses(quiz_id, user_responses, score)
+    # Save responses and update score
+    save_quiz_responses(quiz_id, user_responses, score)
 
-#     return {"message": "Quiz submitted successfully", "score": score}
+    return {"message": "Quiz submitted successfully", "score": score}

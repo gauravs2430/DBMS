@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-from app.database import get_db_connection
+from app.databases import get_db_connection
 
 # Load environment variables
 load_dotenv()
@@ -150,43 +150,43 @@ def calculate_score(user_responses):
     return score
 
 
-# def save_quiz_responses(quiz_id, user_responses, score):
-#     conn = get_db_connection()
-#     cursor = conn.cursor()
+def save_quiz_responses(quiz_id, user_responses, score):
+    conn = get_db_connection()
+    cursor = conn.cursor()
 
-#     # Insert responses into `quiz_responses` table
-#     for response in user_responses:
-#         query = "INSERT INTO quiz_responses (quiz_id, question_id, selected_option) VALUES (%s, %s, %s);"
-#         cursor.execute(query, (quiz_id, response.question_id, response.selected_option))
+    # Insert responses into `quiz_responses` table
+    for response in user_responses:
+        query = "INSERT INTO quiz_responses (quiz_id, question_id, selected_option) VALUES (%s, %s, %s);"
+        cursor.execute(query, (quiz_id, response.question_id, response.selected_option))
 
-#     # Update the final score in `quizzes` table
-#     query = "UPDATE quizzes SET score = %s WHERE quiz_id = %s;"
-#     cursor.execute(query, (score, quiz_id))
+    # Update the final score in `quizzes` table
+    query = "UPDATE quizzes SET score = %s WHERE quiz_id = %s;"
+    cursor.execute(query, (score, quiz_id))
 
-#     conn.commit()
-#     conn.close()
+    conn.commit()
+    conn.close()
 
-# from database import get_db_connection
+from app.databases import get_db_connection
 
-# def save_quiz_start(quiz_id: str, user_id: int, topic_id: int):
-#     """
-#     Saves quiz start info in the database.
+def save_quiz_start(quiz_id: str, user_id: int, topic_id: int):
+    """
+    Saves quiz start info in the database.
 
-#     Args:
-#         quiz_id (str): Unique identifier for the quiz.
-#         user_id (int): ID of the user taking the quiz.
-#         topic_id (int): ID of the quiz topic.
-#     """
-#     query = "INSERT INTO quizzes (quiz_id, user_id, topic_id, score) VALUES (%s, %s, %s, %s);"
+    Args:
+        quiz_id (str): Unique identifier for the quiz.
+        user_id (int): ID of the user taking the quiz.
+        topic_id (int): ID of the quiz topic.
+    """
+    query = "INSERT INTO quizzes (quiz_id, user_id, topic_id, score) VALUES (%s, %s, %s, %s);"
 
-#     try:
-#         conn = get_db_connection()
-#         cursor = conn.cursor()
-#         cursor.execute(query, (quiz_id, user_id, topic_id, 0))  # Score is initially 0
-#         conn.commit()
-#     except Exception as e:
-#         print(f"Error saving quiz start: {e}")
-#     finally:
-#         cursor.close()
-#         conn.close()
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(query, (quiz_id, user_id, topic_id, 0))  # Score is initially 0
+        conn.commit()
+    except Exception as e:
+        print(f"Error saving quiz start: {e}")
+    finally:
+        cursor.close()
+        conn.close()
 
