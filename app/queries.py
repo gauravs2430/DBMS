@@ -6,19 +6,21 @@ load_dotenv()
 
 # 1. Retrieve a random question
 def get_random_question():
+
     query = """
-        SELECT q.question_id, q.question_text, q.difficulty, t.topic_name, e.exam_name
-        FROM questions q
-        INNER JOIN topics t ON q.topic_id = t.topic_id
-        INNER JOIN exams e ON t.exam_id = e.exam_id
-        ORDER BY RAND()
-        LIMIT 1;
+       SELECT q.question_id, q.question_text, q.difficulty, t.topic_name, en.exam_name
+FROM questions q
+INNER JOIN topics t ON q.topic_id = t.topic_id
+INNER JOIN exams e ON t.exam_id = e.exam_id
+INNER JOIN exam_names en ON e.exam_name_id = en.exam_name_id
+ORDER BY RAND()
+LIMIT 1;
+
     """
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     cursor.execute(query)
     result = cursor.fetchone()
-    conn.close()
     return result
 
 # 2. Retrieve random questions (10 to 15) from the same topic
@@ -100,25 +102,7 @@ def update_question(question_id, question_text, difficulty):
     conn.close()
 
 
-# 8. Retrieve random questions for a particular exam
-def get_random_questions_for_exam(exam_id, limit_start=10, limit_end=15):
-    query = """
-        SELECT * FROM questions
-        WHERE topic_id IN (
-            SELECT topic_id FROM topics WHERE exam_id = %s ORDER BY RAND() LIMIT 5
-        )
-        ORDER BY RAND()
-        LIMIT %s, %s;
-    """
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute(query, (exam_id, limit_start, limit_end))
-    result = cursor.fetchall()
-    conn.close()
-    return result
-
-
-# 9. Retrieve all users (students and admins) and their quiz scores, even if they have not attempted any quizzes
+# 8. Retrieve all users (students and admins) and their quiz scores, even if they have not attempted any quizzes
 def get_all_users_and_scores():
     query = """
     SELECT users.name, quizzes.score
