@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 from app.databases import get_db_connection
+import logging
 
 # Load environment variables
 load_dotenv()
@@ -21,18 +22,22 @@ LIMIT 1;
     cursor = conn.cursor(dictionary=True)
     cursor.execute(query)
     result = cursor.fetchone()
+
     return result
 
 # 2. Retrieve random questions (10 to 15) from the same topic
-def get_random_questions_by_topic(topic_id, limit_start=10, limit_end=15):
+def get_random_questions_by_topic(topic_id, limit_start=1, limit_end=15):
     query = """
-        SELECT q.question_id, q.question_text, q.difficulty, t.topic_name, e.exam_name
-        FROM questions q
-        INNER JOIN topics t ON q.topic_id = t.topic_id
-        INNER JOIN exams e ON t.exam_id = e.exam_id
-        WHERE q.topic_id = %s
-        ORDER BY RAND()
-        LIMIT %s, %s;
+        SELECT q.question_id, q.question_text, q.difficulty, 
+       t.topic_name, en.exam_name
+FROM questions q
+JOIN topics t ON q.topic_id = t.topic_id
+JOIN exams e ON t.exam_id = e.exam_id
+JOIN exam_names en ON e.exam_name_id = en.exam_name_id
+WHERE q.topic_id = %s
+ORDER BY RAND()
+LIMIT %s, %s;
+
     """
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -44,13 +49,20 @@ def get_random_questions_by_topic(topic_id, limit_start=10, limit_end=15):
 # 3. Retrieve random questions (10 to 15) of random topics for a particular exam
 def get_random_questions_for_exam(exam_id, limit_start=10, limit_end=15):
     query = """
-        SELECT q.question_id, q.question_text, q.difficulty, t.topic_name, e.exam_name
-        FROM questions q
-        INNER JOIN topics t ON q.topic_id = t.topic_id
-        INNER JOIN exams e ON t.exam_id = e.exam_id
-        WHERE t.exam_id = %s
-        ORDER BY RAND()
-        LIMIT %s, %s;
+       SELECT 
+    q.question_id, 
+    q.question_text, 
+    q.difficulty, 
+    t.topic_name, 
+    en.exam_name
+FROM questions q
+INNER JOIN topics t ON q.topic_id = t.topic_id
+INNER JOIN exams e ON t.exam_id = e.exam_id
+INNER JOIN exam_names en ON e.exam_name_id = en.exam_name_id
+WHERE e.exam_id = %s
+ORDER BY RAND()
+LIMIT %s OFFSET %s;
+
     """
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -62,10 +74,15 @@ def get_random_questions_for_exam(exam_id, limit_start=10, limit_end=15):
 # 4. Retrieve all topics for a particular exam
 def get_topics_for_exam(exam_id):
     query = """
-        SELECT t.topic_id, t.topic_name, e.exam_name
-        FROM topics t
-        INNER JOIN exams e ON t.exam_id = e.exam_id
-        WHERE e.exam_id = %s;
+        SELECT 
+    t.topic_id, 
+    t.topic_name, 
+    en.exam_name
+FROM topics t
+INNER JOIN exams e ON t.exam_id = e.exam_id
+INNER JOIN exam_names en ON e.exam_name_id = en.exam_name_id
+WHERE e.exam_id = %s;
+
     """
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -76,7 +93,7 @@ def get_topics_for_exam(exam_id):
 
 # 5. Admin - Add a new question
 def add_question(topic_id, question_text, difficulty):
-    query = "INSERT INTO questions (topic_id, question_text, difficulty) VALUES (%s, %s, %s);"
+    query = "INSERT INTO questions (topic_id, question_text, difficulty) VALUES (%s, %s, %s); :"
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute(query, (topic_id, question_text, difficulty))
