@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 from app.databases import get_db_connection
 import logging
+import pymysql 
 
 # Load environment variables
 load_dotenv()
@@ -91,14 +92,20 @@ WHERE e.exam_id = %s;
     conn.close()
     return result
 
-# 5. Admin - Add a new question
 def add_question(topic_id, question_text, difficulty):
-    query = "INSERT INTO questions (topic_id, question_text, difficulty) VALUES (%s, %s, %s); :"
+    if difficulty not in ['Easy', 'Medium', 'Hard']:
+        raise ValueError("Difficulty must be 'Easy', 'Medium', or 'Hard'")
+
+    query = """
+        INSERT INTO questions (topic_id, question_text, difficulty)
+        VALUES (%s, %s, %s);
+    """
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute(query, (topic_id, question_text, difficulty))
     conn.commit()
     conn.close()
+
 
 # 6. Admin - Remove a question
 def remove_question(question_id):
@@ -187,6 +194,43 @@ def save_quiz_start(quiz_id: str, user_id: int, topic_id: int):
         conn.commit()
     except Exception as e:
         print(f"Error saving quiz start: {e}")
+    finally:
+        cursor.close()
+        conn.close()
+
+def register_user(username: str, password: str, email: str, role: str):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    try:
+        # Start transaction manually (optional with PyMySQL, but makes intention clear)
+        cursor.execute("START TRANSACTION;")
+
+        # Raw INSERT query
+        cursor.execute("""
+            INSERT INTO users (username, password, email)
+            VALUES (%s, %s, %s)
+        """, (username, password, email))
+
+        user_id = cursor.lastrowid
+
+        cursor.execute("""
+            INSERT INTO user_roles (user_id, role)
+            VALUES (%s, %s)
+        """, (user_id, role.lower()))
+
+        cursor.execute("COMMIT;")  # Explicit commit using raw SQL
+
+        return {"message": "User registered successfully", "user_id": user_id}
+
+    except pymysql.IntegrityError:
+        cursor.execute("ROLLBACK;")
+        return {"error": "Username or email already exists"}
+
+    except Exception as e:
+        cursor.execute("ROLLBACK;")
+        return {"error": str(e)}
+
     finally:
         cursor.close()
         conn.close()

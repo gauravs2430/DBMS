@@ -1,6 +1,7 @@
 from typing import List
 from uuid import uuid4 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException , Depends 
+import pymysql 
 from app.queries import (
     get_random_question,
     get_random_questions_by_topic,
@@ -12,7 +13,8 @@ from app.queries import (
     get_all_users_and_scores , 
     calculate_score , 
     save_quiz_responses , 
-    save_quiz_start
+    save_quiz_start,
+    register_user
 )
 from app.schemas import (
     RandomQuestionResponse,
@@ -21,6 +23,9 @@ from app.schemas import (
     UserScoreListResponse,
     QuestionCreate,
     QuestionResponse, QuizResponse , 
+    RegisterUserRequest ,
+    RegisterUserResponse ,
+    QuestionListResponse 
 )
 
 app = FastAPI()
@@ -112,3 +117,14 @@ async def submit_quiz(quiz_id: str, user_responses: List[QuizResponse]):
     save_quiz_responses(quiz_id, user_responses, score)
 
     return {"message": "Quiz submitted successfully", "score": score}
+
+
+
+@app.post("/register-user", response_model=RegisterUserResponse)
+def register_user_route(payload: RegisterUserRequest):
+    result = register_user(payload.username, payload.password, payload.email, payload.role)
+    
+    if "error" in result:
+        raise HTTPException(status_code=400, detail=result["error"])
+    
+    return result

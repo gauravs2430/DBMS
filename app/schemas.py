@@ -1,4 +1,4 @@
-from pydantic import BaseModel 
+from pydantic import BaseModel , EmailStr 
 from typing import List, Optional
 
 from pydantic import BaseModel
@@ -71,3 +71,12 @@ class RandomQuestionResponse(BaseModel):
 class RandomQuestionListResponse(BaseModel):
     questions: List[QuestionBase]
 
+class RegisterUserRequest(BaseModel):
+    username: str
+    password: str  # Ideally hashed before storing
+    email: EmailStr
+    role: str  # 'student' or 'admin'
+
+class RegisterUserResponse(BaseModel):
+    message: str
+    user_id: int
