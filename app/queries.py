@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 from app.databases import get_db_connection
-import logging
+import bcrypt
 import pymysql 
 
 # Load environment variables
@@ -235,3 +235,33 @@ def register_user(username: str, password: str, email: str, role: str):
         cursor.close()
         conn.close()
 
+def login_user(username: str, password: str):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("""
+            SELECT user_id, password, email FROM users WHERE username = %s
+        """, (username,))
+        user = cursor.fetchone()
+
+        if not user:
+            return {"error": "Invalid username or password"}
+
+        user_id, stored_password, email = user
+
+        # 🔓 Compare plaintext passwords directly
+        if password != stored_password:
+            return {"error": "Invalid username or password"}
+
+        return {
+            "message": "Login successful",
+            "user_id": user_id,
+            "email": email
+        }
+
+    except Exception as e:
+        return {"error": str(e)}
+    finally:
+        cursor.close()
+        conn.close()

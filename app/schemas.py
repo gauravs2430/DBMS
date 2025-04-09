@@ -80,3 +80,7 @@ class RegisterUserRequest(BaseModel):
 class RegisterUserResponse(BaseModel):
     message: str
     user_id: int
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str

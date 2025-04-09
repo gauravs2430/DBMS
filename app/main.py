@@ -1,7 +1,7 @@
 from typing import List
 from uuid import uuid4 
 from fastapi import FastAPI, HTTPException , Depends 
-import pymysql 
+from fastapi.middleware.cors import CORSMiddleware
 from app.queries import (
     get_random_question,
     get_random_questions_by_topic,
@@ -14,7 +14,8 @@ from app.queries import (
     calculate_score , 
     save_quiz_responses , 
     save_quiz_start,
-    register_user
+    register_user , 
+    login_user 
 )
 from app.schemas import (
     RandomQuestionResponse,
@@ -25,10 +26,20 @@ from app.schemas import (
     QuestionResponse, QuizResponse , 
     RegisterUserRequest ,
     RegisterUserResponse ,
-    QuestionListResponse 
+    LoginRequest
 )
 
 app = FastAPI()
+
+# 👇 Add this CORS middleware config immediately after initializing app
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Later replace with your frontend domain in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 @app.get("/")
 def read_root():
@@ -128,3 +139,11 @@ def register_user_route(payload: RegisterUserRequest):
         raise HTTPException(status_code=400, detail=result["error"])
     
     return result
+
+
+@app.post("/login")
+def login(request: LoginRequest):
+    return login_user(
+        username=request.username,
+        password=request.password
+    )
