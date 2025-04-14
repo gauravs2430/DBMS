@@ -1,6 +1,5 @@
 from dotenv import load_dotenv
 from app.databases import get_db_connection
-import bcrypt
 import pymysql 
 
 # Load environment variables
@@ -198,7 +197,7 @@ def save_quiz_start(quiz_id: str, user_id: int, topic_id: int):
         cursor.close()
         conn.close()
 
-def register_user(username: str, password: str, email: str, role: str):
+def register_user(username: str, password: str, email: str,  role: str):
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -238,7 +237,6 @@ def register_user(username: str, password: str, email: str, role: str):
 def login_user(username: str, password: str):
     conn = get_db_connection()
     cursor = conn.cursor()
-
     try:
         cursor.execute("""
             SELECT user_id, password, email FROM users WHERE username = %s

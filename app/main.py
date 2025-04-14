@@ -31,15 +31,16 @@ from app.schemas import (
 
 app = FastAPI()
 
-# 👇 Add this CORS middleware config immediately after initializing app
+Origins = ["http://localhost:8080"]
+
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Later replace with your frontend domain in production
+    allow_origins=Origins,  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 @app.get("/")
 def read_root():
@@ -130,11 +131,9 @@ async def submit_quiz(quiz_id: str, user_responses: List[QuizResponse]):
     return {"message": "Quiz submitted successfully", "score": score}
 
 
-
-@app.post("/register-user", response_model=RegisterUserResponse)
+@app.post("/register", response_model=RegisterUserResponse)
 def register_user_route(payload: RegisterUserRequest):
     result = register_user(payload.username, payload.password, payload.email, payload.role)
-    
     if "error" in result:
         raise HTTPException(status_code=400, detail=result["error"])
     

@@ -79,7 +79,7 @@ class RegisterUserRequest(BaseModel):
 
 class RegisterUserResponse(BaseModel):
     message: str
-    user_id: int
+    user_id: Optional[int] = None
 
 class LoginRequest(BaseModel):
     username: str
